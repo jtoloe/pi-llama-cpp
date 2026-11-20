@@ -245,11 +245,14 @@ export abstract class Server {
       // Check if the model supports specific efforts
       const { chat_template_caps } = await this.fetchModelProps(modelId);
 
-      // Only narrow to reported levels when the array has values; empty or absent
-      // means the template supports reasoning effort but can't distinguish levels.
+      // Only narrow to reported levels when the server returns a non-empty array.
       const { supports_reasoning_effort, reasoning_effort_levels } =
         chat_template_caps;
-      if (supports_reasoning_effort && reasoning_effort_levels?.length) {
+      if (
+        supports_reasoning_effort &&
+        Array.isArray(reasoning_effort_levels) &&
+        reasoning_effort_levels.length > 0
+      ) {
         supported = reasoning_effort_levels;
       }
     } catch {

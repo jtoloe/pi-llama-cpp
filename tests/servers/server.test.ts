@@ -234,26 +234,33 @@ describe("Server getThinkingLevelMap", () => {
     });
   });
 
-  it("should fall back to all levels when reasoning_effort_levels is empty", async () => {
-    mockRpc.mockResolvedValueOnce({
-      chat_template_caps: {
-        supports_reasoning_effort: true,
-        reasoning_effort_levels: [],
-      },
-    });
+  it.each([
+    { name: "empty", levels: [] },
+    { name: "an object with length", levels: { length: 1 } },
+    { name: "a string", levels: "xhigh" },
+  ])(
+    "should fall back to all levels when reasoning_effort_levels is $name",
+    async ({ levels }) => {
+      mockRpc.mockResolvedValueOnce({
+        chat_template_caps: {
+          supports_reasoning_effort: true,
+          reasoning_effort_levels: levels,
+        },
+      });
 
-    const server = createRpcServer();
-    const result = await server.getThinkingLevelMap("test-model");
+      const server = createRpcServer();
+      const result = await server.getThinkingLevelMap("test-model");
 
-    expect(result).toEqual({
-      minimal: "minimal",
-      low: "low",
-      medium: "medium",
-      high: "high",
-      xhigh: "xhigh",
-      max: "max",
-    });
-  });
+      expect(result).toEqual({
+        minimal: "minimal",
+        low: "low",
+        medium: "medium",
+        high: "high",
+        xhigh: "xhigh",
+        max: "max",
+      });
+    },
+  );
 
   it("should fall back to all levels when reasoning_effort_levels is absent", async () => {
     mockRpc.mockResolvedValueOnce({
